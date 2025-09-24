@@ -1,0 +1,160 @@
+{
+  "name": "Data Analysis and Reporting",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3f77dd0a-ed48-4783-a4fd-7b7437ab61fb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cbc06663-7f3b-45e4-8bfa-e7430208bdd8",
+              "name": "sales",
+              "value": "January: 500, February: 700, March: 1200, April: 900, May: 1500",
+              "type": "string"
+            },
+            {
+              "id": "931ff1fc-cdd1-486b-9bd2-5bd537764375",
+              "name": "region",
+              "value": "North America",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6396b8f0-3070-4198-833c-050fd5a409da",
+      "name": "Sales Data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following sales data for {{ $json[\"region\"] }}: {{ $json[\"sales\"] }}.\nProvide:\n1. A summary of monthly sales performance.\n2. The best and worst performing months.\n3. A trend analysis.\n4. Suggestions for improving next quarter's sales.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "cc899bb2-dbbe-4207-b9ca-74fb62aaf1ad",
+      "name": "Analyze Sales"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "b6d4b21a-8814-4eb3-bae1-c5ab69d94d17",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aVmGAkLMdVbENOGp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2aed699-e2df-4a8f-8eb3-965f7467d9f2",
+              "name": "report",
+              "value": "={{ $json[\"output\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "b12781fd-ee5d-4276-bdd1-08e924ef55fb",
+      "name": "Final Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Sales Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Data": {
+      "main": [
+        [
+          {
+            "node": "Analyze Sales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Sales",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Sales": {
+      "main": [
+        [
+          {
+            "node": "Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc1b3164-6fae-4032-82ab-86972a4e4c6c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f10666a23c0a4c5c9016524657a08f2c2479af3977544ab111a9566884a0e452"
+  },
+  "id": "ctljvxMbvgyUA8dv",
+  "tags": []
+}

@@ -1,0 +1,166 @@
+{
+  "name": "Personalized Recommendations",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "953df96f-5c72-45a7-9b2f-8f1ed4d2bded",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Suggest 5 personalized product recommendations for a customer interested in {{ $json[\"interests\"] }}. \nThe budget is {{ $json[\"budget\"] }} and the preferred style is {{ $json[\"style\"] }}. \nList each recommendation with a product name, short description, and why it’s a good match.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "76a7f59d-1ca3-468b-b10e-17432dc8f996",
+      "name": "Recommend Products"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec0fca96-232b-4f6f-b1f6-1a8fe439a4d5",
+              "name": "interests",
+              "value": "fitness",
+              "type": "string"
+            },
+            {
+              "id": "6aa497a6-7305-4b36-8dbc-aa16eb5f220b",
+              "name": "budget",
+              "value": "under $100",
+              "type": "string"
+            },
+            {
+              "id": "e7d0b66b-7df1-4c6c-8078-a38575680083",
+              "name": "style",
+              "value": "modern",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9b7683c8-7592-4933-9dfb-50963a2f469b",
+      "name": "Customer Input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b38068af-0c64-43d6-8c49-f3f430c42456",
+              "name": "recommendations",
+              "value": "={{ $json[\"output\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "f61ea659-cabb-4f00-a0be-75c531d11269",
+      "name": "Display Recommendations"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        432,
+        176
+      ],
+      "id": "e2ed6d1c-a9e9-45bc-a6d7-e607f0c337a4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aVmGAkLMdVbENOGp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Customer Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Input": {
+      "main": [
+        [
+          {
+            "node": "Recommend Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recommend Products": {
+      "main": [
+        [
+          {
+            "node": "Display Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recommend Products",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "965fe288-7628-41d3-b3d4-ca436cd01c2b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f10666a23c0a4c5c9016524657a08f2c2479af3977544ab111a9566884a0e452"
+  },
+  "id": "G8QAiLaERIbjaWfD",
+  "tags": []
+}

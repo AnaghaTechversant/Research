@@ -1,0 +1,160 @@
+{
+  "name": "Content Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e2c55ee6-37bc-43e3-9e5f-eaaf57c4200e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0afd2117-a261-40a7-a5d6-6a198248953f",
+              "name": "topic",
+              "value": "How to start a podcast",
+              "type": "string"
+            },
+            {
+              "id": "4df49d5c-3272-4819-bb75-21236eab6793",
+              "name": "tone",
+              "value": "Friendly and engaging",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "52663740-76ce-4e25-bd08-c8746246aa5d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a detailed blog post about \"{{ $json[\"topic\"] }}\" in a {{ $json[\"tone\"] }} tone. The post should include:\n1. An introduction explaining why this topic is important.\n2. A list of steps or tips for beginners.\n3. A conclusion with encouragement or next steps.\nMake the content informative and easy to understand.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "30557d9f-d38c-4a4c-9369-7d8931208585",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "9c675785-7847-4fa3-8ab8-257775d1a1f6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aVmGAkLMdVbENOGp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "004a4d6c-9ee4-46c7-9d03-e2df9b043f36",
+              "name": "finalContent",
+              "value": "={{ $json[\"output\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "bb9eca44-384d-4b33-b3f5-733ed7711469",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "efcb318b-0a10-4c6a-8e2f-83feb8716775",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f10666a23c0a4c5c9016524657a08f2c2479af3977544ab111a9566884a0e452"
+  },
+  "id": "hix5lh0DFJqTuF26",
+  "tags": []
+}
