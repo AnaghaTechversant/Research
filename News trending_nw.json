@@ -1,0 +1,277 @@
+{
+  "name": "News trending",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        80
+      ],
+      "id": "3455a02d-2365-47aa-8469-d30bc1bf1fdb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json}}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a news summarizer."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=\"Summarize and provide insights for these news articles: {{$json}}\""
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -80,
+        16
+      ],
+      "id": "a743b1c3-9a87-4c4f-a827-31344604d083",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "cb39bfda-e09c-4b9b-9d6f-0a601be02b9d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EdC0JRtK5L6AZhu2",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a5e6c94f-c9d5-42ed-9642-6ab2d898b650",
+              "name": "=title",
+              "value": "Top 5 News in US",
+              "type": "string"
+            },
+            {
+              "id": "e6bbb5b3-d236-4313-893e-2b91f21e8af7",
+              "name": "=summaries",
+              "value": "={{$json[\"summaries\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "db8f84dc-4ba3-42bb-858d-5c9e131c4eff",
+              "name": "enhanced_insights",
+              "value": "={{$json.enhanced_insights}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        16
+      ],
+      "id": "660412d1-ed80-4cb1-8b35-f115ccbfe1a8",
+      "name": "Display Results"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f30e5728-66d0-40db-9fd2-87a9b1c4ac07",
+              "name": "title",
+              "value": "Top 5 News in US",
+              "type": "string"
+            },
+            {
+              "id": "e963d4df-d346-41f4-8468-fa5e5f68f20f",
+              "name": "=summaries",
+              "value": "={{$node[\"Summarize Headlines\"].json[\"summaries\"]}}",
+              "type": "array"
+            },
+            {
+              "id": "970dec4d-d16c-4183-b752-5446bbcf6989",
+              "name": "=enhanced_insights",
+              "value": "={{$node[\"Normalize LLM Output\"].json[\"enhanced_insights\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        128
+      ],
+      "id": "02dfb764-34cd-4f7a-bf5b-fec2456a881e",
+      "name": "Format Output"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/top-headlines?country=us&apiKey=f2b9e120f3f64292b657bdfdd173b6f5",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "f2b9e120f3f64292b657bdfdd173b6f5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "68690d73-989d-4e67-8fc5-24ce8a41f76c",
+      "name": "Get Top Headlines"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Summarize Headlines - robust version\ndata = items[0].get(\"json\", {}) if items else {}\narticles = data.get(\"articles\", [])[:5]  # top 5\nsummaries = []\nfor art in articles:\n    summaries.append({\n        \"title\": art.get(\"title\", \"\"),\n        \"summary\": art.get(\"description\") or art.get(\"content\") or \"\"\n    })\n# Return a single item with `summaries` array\nreturn [{\"json\": {\"summaries\": summaries}}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        80
+      ],
+      "id": "196c28f9-78fc-48bf-84b5-af24e9eb8898",
+      "name": "Summarize Headlines"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Normalize LLM Output (Python)\ndata = items[0].get(\"json\", {}) if items else {}\n\nenhanced = (\n    data.get(\"text\")\n    or data.get(\"output\")\n    or data.get(\"response\")\n    or data.get(\"result\")\n    or \"\"\n)\n\nif not enhanced and \"choices\" in data and data[\"choices\"]:\n    choice = data[\"choices\"][0]\n    enhanced = (\n        choice.get(\"message\", {}).get(\"content\")\n        or choice.get(\"text\")\n        or \"\"\n    )\n\nenhanced = enhanced or data.get(\"body\") or data.get(\"message\") or \"\"\n\nreturn [{\"json\": {\"enhanced_insights\": enhanced}}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        16
+      ],
+      "id": "1b28f389-5da5-460e-92a5-8e3da32187ca",
+      "name": "Normalize LLM Output"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Top Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Normalize LLM Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Display Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Top Headlines": {
+      "main": [
+        [
+          {
+            "node": "Summarize Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Headlines": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize LLM Output": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Display Results": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "db56f8b4-9d28-46d9-a463-190693d02731",
+  "meta": {
+    "instanceId": "ccc213891ab6f89831d24c3f2f7301b6012acb59dd12c6f34240e27f3f64903f"
+  },
+  "id": "YQwDifpV1PL0Ez7b",
+  "tags": []
+}
